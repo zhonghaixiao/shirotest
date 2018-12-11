@@ -1,4 +1,5 @@
 
+
 create table user (
                     id bigint,
                     name varchar(100),
@@ -54,3 +55,8 @@ alter table user add constraint unique (name);
 select * from user;
 delete from user;
 
+set global time_zone='+8:00';
+insert into user_role(user_id, role_id) values
+                                               (1543735282404, 5000),
+                                               (1543735282404, 5001),
+                                               (1543735282404, 5002);

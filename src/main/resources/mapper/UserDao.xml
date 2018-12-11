@@ -13,4 +13,25 @@
         select id, name, password, enable
         from user where name = #{name}
     </select>
+
+    <resultMap id="role" type="com.example.demo.login.domain.Role">
+        <id column="id" property="id"/>
+        <result column="roleDesc" property="description"/>
+        <collection column="id" property="permissions" ofType="com.example.demo.login.domain.Permission"
+                    select="getPermissionsByRoleId">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </collection>
+    </resultMap>
+    <select id="getRolesByUsername" resultMap="role">
+        select role.id, role.roleDesc from user,user_role,role
+        where user.id=user_role.user_id
+        and user_role.role_id=role.id
+        and user.name=#{username}
+    </select>
+    <select id="getPermissionsByRoleId" resultType="com.example.demo.login.domain.Permission">
+        select id, name from permission p, role_permission rp where
+        p.id = rp.permission_id and rp.role_id = #{roleId}
+    </select>
+
 </mapper>

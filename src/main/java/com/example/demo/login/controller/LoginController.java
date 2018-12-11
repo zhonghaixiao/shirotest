@@ -4,12 +4,10 @@ import com.example.demo.login.dao.UserDao;
 import com.example.demo.login.domain.User;
 import com.example.demo.login.service.LoginService;
 import com.example.demo.util.Result;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.example.demo.util.SnowflakeIdWorker.next;
 
@@ -34,6 +32,12 @@ public class LoginController {
         boolean isSuccess = service.login(user);
         System.out.println("isSuccess: " + isSuccess);
         return Result.ok(isSuccess);
+    }
+
+    @GetMapping("test-read")
+    @RequiresPermissions("read")
+    public  Result test(){
+        return Result.ok("test read");
     }
 
 }

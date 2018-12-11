@@ -51,4 +51,5 @@ public class LoginService {
     public User getUserByName(String username) {
         return userDao.selectByName(username);
     }
+
 }
