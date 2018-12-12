@@ -3,6 +3,7 @@ package com.example.demo.config;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.example.demo.login.domain.User;
 import com.example.demo.login.service.LoginService;
+import com.example.demo.realm.MyRealm;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -19,13 +20,21 @@ import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.SimpleAccountRealm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.apache.shiro.spring.LifecycleBeanPostProcessor;
+import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
+import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.subject.MutablePrincipalCollection;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class ShiroConfig {
@@ -58,14 +67,53 @@ public class ShiroConfig {
         jdbcRealm.setPermissionsLookupEnabled(true);
         securityManager.setRealms(Arrays.asList(jdbcRealm));
 
+        SecurityManager securityManager = new DefaultWebSecurityManager(myRealm());
         SecurityUtils.setSecurityManager(securityManager);
-        
+
 
         return securityManager;
     }
 
     @Bean
     public Realm myRealm(){
+        return new MyRealm();
+    }
+
+//    @Bean
+//    public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager){
+//        ShiroFilterFactoryBean filterFactoryBean = new ShiroFilterFactoryBean();
+//        filterFactoryBean.setSecurityManager(securityManager);
+//        Map<String,String> rules = new HashMap<>();
+////        rules.put("/logout", "logout");
+////        rules.put("/**", "authc");
+////        filterFactoryBean.setLoginUrl("/login");
+////        filterFactoryBean.setSuccessUrl("/index");
+//        filterFactoryBean.setFilterChainDefinitionMap(rules);
+//        return filterFactoryBean;
+//    }
+
+    @Bean
+    public LifecycleBeanPostProcessor lifecycleBeanPostProcessor(){
+        return new LifecycleBeanPostProcessor();
+    }
+
+    @Bean
+    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator(){
+        DefaultAdvisorAutoProxyCreator d = new DefaultAdvisorAutoProxyCreator();
+        d.setProxyTargetClass(true);
+        return d;
+    }
+
+    @Bean
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager){
+        AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
+        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager);
+        return authorizationAttributeSourceAdvisor;
+    }
+
+
+    @Bean
+    public Realm simpleRealm(){
         return new AuthenticatingRealm() {
             @Override
             protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
