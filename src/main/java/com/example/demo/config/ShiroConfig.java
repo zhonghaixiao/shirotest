@@ -14,6 +14,7 @@ import org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.authz.ModularRealmAuthorizer;
 import org.apache.shiro.authz.permission.WildcardPermissionResolver;
+import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.AuthenticatingRealm;
@@ -26,6 +27,10 @@ import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.subject.MutablePrincipalCollection;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.crazycake.shiro.RedisCacheManager;
+import org.crazycake.shiro.RedisClusterManager;
+import org.crazycake.shiro.RedisManager;
+import org.crazycake.shiro.RedisSessionDAO;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -44,34 +49,41 @@ public class ShiroConfig {
 
     @Bean
     public SecurityManager securityManager(){
-        DefaultSecurityManager securityManager = new DefaultSecurityManager(myRealm());
+//        DefaultSecurityManager securityManager = new DefaultSecurityManager(myRealm());
+//
+//        //设置authenticator
+//        ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
+//        authenticator.setAuthenticationStrategy(new AtLeastOneSuccessfulStrategy());
+//
+//        //设置authorizer
+//        ModularRealmAuthorizer authorizer = new ModularRealmAuthorizer();
+//        authorizer.setPermissionResolver(new WildcardPermissionResolver());
+//        securityManager.setAuthorizer(authorizer);
+//
+//
+//        DruidDataSource source = new DruidDataSource();
+//        source.setDriverClassName("com.mysql.jdbc.Driver");
+//        source.setUrl("jdbc:mysql://localhost:3306/test");
+//        source.setUsername("root");
+//        source.setPassword("");
+//
+//        JdbcRealm jdbcRealm = new JdbcRealm();
+//        jdbcRealm.setDataSource(source);
+//        jdbcRealm.setPermissionsLookupEnabled(true);
+//        securityManager.setRealms(Arrays.asList(jdbcRealm));
 
-        //设置authenticator
-        ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
-        authenticator.setAuthenticationStrategy(new AtLeastOneSuccessfulStrategy());
-
-        //设置authorizer
-        ModularRealmAuthorizer authorizer = new ModularRealmAuthorizer();
-        authorizer.setPermissionResolver(new WildcardPermissionResolver());
-        securityManager.setAuthorizer(authorizer);
-
-
-        DruidDataSource source = new DruidDataSource();
-        source.setDriverClassName("com.mysql.jdbc.Driver");
-        source.setUrl("jdbc:mysql://localhost:3306/test");
-        source.setUsername("root");
-        source.setPassword("");
-
-        JdbcRealm jdbcRealm = new JdbcRealm();
-        jdbcRealm.setDataSource(source);
-        jdbcRealm.setPermissionsLookupEnabled(true);
-        securityManager.setRealms(Arrays.asList(jdbcRealm));
-
-        SecurityManager securityManager = new DefaultWebSecurityManager(myRealm());
+        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager(myRealm());
+        securityManager.setCacheManager(redisCache());
         SecurityUtils.setSecurityManager(securityManager);
 
-
         return securityManager;
+    }
+
+    @Bean
+    public CacheManager redisCache(){
+        RedisCacheManager manager = new RedisCacheManager();
+        manager.setRedisManager(new RedisManager());
+        return manager;
     }
 
     @Bean
